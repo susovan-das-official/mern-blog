@@ -1,10 +1,6 @@
-import { Button } from "./components/ui/button";
+import AppRoutes from "./routes/AppRoutes";
 
 const App = () => {
-  return (
-    <div className="px-4 py-6">
-      <Button>Click Me</Button>
-    </div>
-  );
+  return <AppRoutes />;
 };
 export default App;
