@@ -1,13 +1,16 @@
-import app from "./app.js";
 import dotenv from "dotenv";
-dotenv.config({ path: "./.env" });
+dotenv.config();
+import app from "./app.js";
+import { connectionDB } from "./db/database.js";
 
 const PORT = process.env.PORT || 8080;
 
-app.get("/", (req, res) => {
-  return res.status(200).json({ message: "Hello World" });
-});
-
-app.listen(PORT, () => {
-  console.log(`App is running on PORT : ${PORT}`);
-});
+connectionDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`SERVER RUNNING ON PORT: ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.log(`SERVER CONNECTION ERROR: ${error.message}`);
+  });
