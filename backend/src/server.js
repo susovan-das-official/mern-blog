@@ -5,6 +5,7 @@ import { connectionDB } from "./db/database.js";
 
 const PORT = process.env.PORT || 8080;
 
+
 connectionDB()
   .then(() => {
     app.listen(PORT, () => {

@@ -19,4 +19,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
 
+// Routes import
+
+import authRoutes from "./routes/auth.routes.js";
+
+app.use("/api/v1/auth", authRoutes);
+
+app.use((err, req, res, next) => {
+  console.log(err);
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(statusCode).json({ success: false, statusCode, message: message });
+});
+
 export default app;

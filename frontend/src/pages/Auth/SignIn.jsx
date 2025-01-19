@@ -13,9 +13,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { RouteSignUp } from "@/helper/RouteName";
+import { RouteIndex, RouteSignUp } from "@/helper/RouteName";
+import { loginApi } from "@/api/Api";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const SignIn = () => {
+  const navigate = useNavigate();
   const formSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8, "Password must be at least 8 character long"),
@@ -29,8 +33,26 @@ const SignIn = () => {
     },
   });
 
-  function onSubmit(values) {
-    console.log(values);
+  async function onSubmit(values) {
+    try {
+      // Login the user
+      const response = await loginApi(values);
+
+      if (response.status === 200) {
+        toast.success(response.data.message);
+        form.reset();
+        navigate(RouteIndex);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      } else {
+        toast.error(response.data.message);
+        form.reset();
+        navigate(RouteSignUp);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+      navigate(RouteSignUp);
+    }
   }
 
   return (

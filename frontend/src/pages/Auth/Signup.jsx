@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   Form,
@@ -14,19 +14,23 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { RouteSignIn } from "@/helper/RouteName";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { registerApi } from "@/api/Api";
 
 const Signup = () => {
-  const formSchema = z.object({
-    username: z.string().min(3, "Username must be at least 3 character long"),
-    email: z.string().email(),
-    password: z.string().min(8, "Password must be at least 8 character long"),
-    confirmPassword: z
-      .string()
-      .refine(
-        (data) => data.password !== data.confirmPassword,
-        "Password and confirm should be same"
-      ),
-  });
+  const navigate = useNavigate();
+  const formSchema = z
+    .object({
+      username: z.string().min(3, "Username must be at least 3 character long"),
+      email: z.string().email(),
+      password: z.string().min(8, "Password must be at least 8 character long"),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Password and confirm password must match",
+      path: ["confirmPassword"],
+    });
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -34,11 +38,27 @@ const Signup = () => {
       username: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  function onSubmit(values) {
-    console.log(values);
+  async function onSubmit(values) {
+    try {
+      const response = await registerApi(values);
+      if (response.status === 201) {
+        toast.success(response.data.message);
+        form.reset();
+        navigate(RouteSignIn);
+      } else {
+        toast.error(response.data.message);
+        form.reset();
+        navigate(RouteSignIn);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+      navigate(RouteSignIn);
+    }
   }
 
   return (
