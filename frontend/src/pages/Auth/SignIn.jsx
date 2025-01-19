@@ -18,8 +18,12 @@ import { loginApi } from "@/api/Api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import GoogleLogin from "@/components/GoogleLogin";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/app/features/AuthSlice/authSlice";
 
 const SignIn = () => {
+  const dispatch = useDispatch();
+
   const navigate = useNavigate();
   const formSchema = z.object({
     email: z.string().email(),
@@ -38,20 +42,22 @@ const SignIn = () => {
     try {
       // Login the user
       const response = await loginApi(values);
+      console.log(`Resoponse: `, response);
 
       if (response.status === 200) {
-        toast.success(response.data.message);
+        toast.success(response?.data?.message);
         form.reset();
+        dispatch(setUser(response?.data?.user));
         navigate(RouteIndex);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
+        // localStorage.setItem("user", JSON.stringify(response?.data?.user));
       } else {
-        toast.error(response.data.message);
+        toast.error(response?.data?.message);
         form.reset();
         navigate(RouteSignUp);
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message);
       navigate(RouteSignUp);
     }
   }

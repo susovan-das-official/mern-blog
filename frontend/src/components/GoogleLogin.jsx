@@ -5,9 +5,12 @@ import { auth, provider } from "@/helper/firebase";
 import { GoogleLoginApi } from "@/api/Api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { RouteIndex } from "@/helper/RouteName";
+import { RouteIndex, RouteSignIn } from "@/helper/RouteName";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/app/features/AuthSlice/authSlice";
 
 const GoogleLogin = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Function to handle the Google login process.
@@ -31,10 +34,11 @@ const GoogleLogin = () => {
       // Handle successful response.
       if (response.status === 200) {
         toast.success(response?.data?.message);
+        dispatch(setUser(response?.data?.user));
         navigate(RouteIndex);
-        localStorage.setItem("userInfo", JSON.stringify(response?.data?.user));
       } else {
         toast.error(response?.data?.message);
+        navigate(RouteSignIn);
       }
     } catch (error) {
       toast.error(
