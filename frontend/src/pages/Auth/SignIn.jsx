@@ -17,6 +17,7 @@ import { RouteIndex, RouteSignUp } from "@/helper/RouteName";
 import { loginApi } from "@/api/Api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import GoogleLogin from "@/components/GoogleLogin";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -105,6 +106,13 @@ const SignIn = () => {
               <Button type="submit" className="w-full">
                 Sign In
               </Button>
+            </div>
+
+            <div>
+              <div className="border my-5 flex justify-center items-center">
+                <span className="absolute bg-white text-sm">Or</span>
+              </div>
+              <GoogleLogin />
             </div>
             <div className="mt-5 text-sm flex justify-center items-center gap-2">
               <p>Do&apos;t have account?</p>

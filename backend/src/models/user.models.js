@@ -23,7 +23,6 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
       trim: true,
       minlength: 8,
     },
@@ -34,7 +33,8 @@ const userSchema = new Schema(
     avatar: {
       type: String,
       trim: true,
-      default: "https://example.com/default-avatar.png",
+      default:
+        "https://i.pinimg.com/736x/e7/ba/95/e7ba955b143cda691280e1d0fd23ada6.jpg",
     },
   },
   { timestamps: true }

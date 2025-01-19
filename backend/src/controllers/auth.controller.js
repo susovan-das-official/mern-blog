@@ -27,7 +27,10 @@ export const Register = async (req, res, next) => {
     }
 
     // Create the user
-    const user = await User.create({ username, email, password });
+    const newUser = await User.create({ username, email, password });
+
+    const user = await User.findById(newUser._id).select("-password");
+
     return res.status(201).json({
       success: true,
       message: `Welcome, ${user.username}. Your account has been successfully created.`,
@@ -56,20 +59,20 @@ export const Login = async (req, res, next) => {
     }
 
     // Check if user exists
-    const user = await User.findOne({ email });
-    if (!user) {
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
       return next(new ApiError(404, "Invalid login credentials."));
     }
 
     // Verify the password
-    const isPasswordCorrect = await user.isPasswordCorrect(password);
+    const isPasswordCorrect = await existingUser.isPasswordCorrect(password);
     if (!isPasswordCorrect) {
       console.log("Incorrect password.");
       return next(new ApiError(401, "Invalid login credentials."));
     }
 
     // Generate JWT and set cookie
-    const token = await user.generateJWT();
+    const token = await existingUser.generateJWT();
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -77,6 +80,8 @@ export const Login = async (req, res, next) => {
       path: "/",
     };
     res.cookie("token", token, cookieOptions);
+
+    const user = await User.findById(existingUser._id).select("-password");
 
     // Success response
     res.status(200).json({
@@ -87,6 +92,63 @@ export const Login = async (req, res, next) => {
   } catch (error) {
     // Log the error and return a generic message
     console.error(error);
+    return next(
+      new ApiError(
+        500,
+        "An unexpected error occurred while logging you in. Please try again later."
+      )
+    );
+  }
+};
+
+export const GoogleLogin = async (req, res, next) => {
+  try {
+    const { username, email, avatar } = req.body;
+    let user;
+
+    // Check if user exists
+    user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user
+      user = await User.create({
+        username,
+        email,
+        avatar,
+      });
+    }
+
+    // Generate JWT
+    const token = await user.generateJWT();
+
+    // Set cookie options
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      path: "/",
+    };
+
+    // Set token in cookie
+    res.cookie("token", token, cookieOptions);
+
+    // Exclude sensitive fields before responding
+    const userResponse = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+    };
+
+    // Success response
+    res.status(200).json({
+      success: true,
+      message: `Welcome, ${user.username}.`,
+      user: userResponse,
+    });
+  } catch (error) {
+    // Log the error and return a generic message
+    console.error("Google Login Error:", error);
     return next(
       new ApiError(
         500,
