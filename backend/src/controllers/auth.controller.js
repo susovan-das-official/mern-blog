@@ -157,3 +157,32 @@ export const GoogleLogin = async (req, res, next) => {
     );
   }
 };
+
+export const Logout = async (req, res, next) => {
+  try {
+    //cookie options
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      path: "/",
+    };
+
+    // Clear cookie
+    res.clearCookie("token", cookieOptions);
+
+    // Success response
+    res.status(200).json({
+      success: true,
+      message: `You have been successfully logged out.`,
+    });
+  } catch (error) {
+    // Log the error and return a generic message
+    return next(
+      new ApiError(
+        500,
+        "An unexpected error occurred while logging you in. Please try again later."
+      )
+    );
+  }
+};

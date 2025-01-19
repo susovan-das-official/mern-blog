@@ -30,3 +30,9 @@ export const GoogleLoginApi = (userData) => {
     withCredentials: true,
   });
 };
+
+export const LogoutApi = () => {
+  return api.post("/auth/logout", {
+    withCredentials: true,
+  });
+};
