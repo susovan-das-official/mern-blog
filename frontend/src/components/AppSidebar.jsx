@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
 import { IoHome } from "react-icons/io5";
+import { RouteCategoryDetails, RouteIndex } from "@/helper/RouteName";
 
 const AppSidebar = () => {
   return (
@@ -27,21 +28,21 @@ const AppSidebar = () => {
             <SidebarMenuItem>
               <SidebarMenuButton>
                 <IoHome />
-                <Link to={"/"}>Home</Link>
+                <Link to={RouteIndex}>Home</Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
             <SidebarMenuItem>
               <SidebarMenuButton>
                 <IoHome />
-                <Link to={"/"}>Categories</Link>
+                <Link to={RouteCategoryDetails}>Categories</Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
             <SidebarMenuItem>
               <SidebarMenuButton>
                 <IoHome />
-                <Link to={"/"}>Blogs</Link>
+                <Link to={"/blogs"}>Blogs</Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
 

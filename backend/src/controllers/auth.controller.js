@@ -1,6 +1,9 @@
 import { ApiError } from "../helpers/handleError.js";
 import User from "../models/user.models.js";
 
+/**
+ * Register a new user
+ */
 export const Register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
@@ -10,18 +13,18 @@ export const Register = async (req, res, next) => {
       return next(
         new ApiError(
           400,
-          "All fields are required. Please provide username, email, and password."
+          "All fields are required: username, email, and password."
         )
       );
     }
 
     // Check if the user already exists
-    const checkUser = await User.findOne({ email });
-    if (checkUser) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return next(
         new ApiError(
           409,
-          "An account with this email already exists. Please try logging in."
+          "An account with this email already exists. Please log in."
         )
       );
     }
@@ -29,159 +32,147 @@ export const Register = async (req, res, next) => {
     // Create the user
     const newUser = await User.create({ username, email, password });
 
+    // Exclude the password in the response
     const user = await User.findById(newUser._id).select("-password");
 
     return res.status(201).json({
       success: true,
-      message: `Welcome, ${user.username}. Your account has been successfully created.`,
-      user,
+      message: `Welcome, ${user.username}. Your account has been created successfully.`,
+      data: user,
     });
   } catch (error) {
-    // Return error message
+    console.error("Error during registration:", error);
     return next(
       new ApiError(
         500,
-        "An unexpected error occurred while creating your account. Please try again later."
+        "An error occurred while creating your account. Please try again later."
       )
     );
   }
 };
 
+/**
+ * Log in a user
+ */
 export const Login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     // Validate input fields
     if (!email || !password) {
-      return next(
-        new ApiError(400, "Email and password are required for login.")
-      );
+      return next(new ApiError(400, "Both email and password are required."));
     }
 
     // Check if user exists
-    const existingUser = await User.findOne({ email });
-    if (!existingUser) {
+    const user = await User.findOne({ email });
+    if (!user) {
       return next(new ApiError(404, "Invalid login credentials."));
     }
 
     // Verify the password
-    const isPasswordCorrect = await existingUser.isPasswordCorrect(password);
+    const isPasswordCorrect = await user.isPasswordCorrect(password);
     if (!isPasswordCorrect) {
-      console.log("Incorrect password.");
       return next(new ApiError(401, "Invalid login credentials."));
     }
 
     // Generate JWT and set cookie
-    const token = await existingUser.generateJWT();
-    const cookieOptions = {
+    const token = await user.generateJWT();
+    res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       path: "/",
-    };
-    res.cookie("token", token, cookieOptions);
+    });
 
-    const user = await User.findById(existingUser._id).select("-password");
+    // Exclude the password in the response
+    const userResponse = await User.findById(user._id).select("-password");
 
-    // Success response
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: `Welcome back, ${user.username}.`,
-      user,
+      message: `Welcome back, ${userResponse.username}.`,
+      data: userResponse,
     });
   } catch (error) {
-    // Log the error and return a generic message
-    console.error(error);
+    console.error("Login error:", error);
     return next(
       new ApiError(
         500,
-        "An unexpected error occurred while logging you in. Please try again later."
+        "An error occurred while logging you in. Please try again later."
       )
     );
   }
 };
 
+/**
+ * Log in a user with Google
+ */
 export const GoogleLogin = async (req, res, next) => {
   try {
     const { username, email, avatar } = req.body;
-    let user;
 
-    // Check if user exists
-    user = await User.findOne({ email });
+    let user = await User.findOne({ email });
 
+    // If user doesn't exist, create a new account
     if (!user) {
-      // Create new user
-      user = await User.create({
-        username,
-        email,
-        avatar,
-      });
+      user = await User.create({ username, email, avatar });
     }
 
     // Generate JWT
     const token = await user.generateJWT();
-
-    // Set cookie options
-    const cookieOptions = {
+    res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       path: "/",
-    };
+    });
 
-    // Set token in cookie
-    res.cookie("token", token, cookieOptions);
-
-    // Exclude sensitive fields before responding
+    // Exclude sensitive fields in the response
     const userResponse = {
-      id: user._id,
+      _id: user._id,
       username: user.username,
       email: user.email,
       avatar: user.avatar,
     };
 
-    // Success response
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: `Welcome, ${user.username}.`,
-      user: userResponse,
+      data: userResponse,
     });
   } catch (error) {
-    // Log the error and return a generic message
-    console.error("Google Login Error:", error);
+    console.error("Google login error:", error);
     return next(
       new ApiError(
         500,
-        "An unexpected error occurred while logging you in. Please try again later."
+        "An error occurred during Google login. Please try again later."
       )
     );
   }
 };
 
+/**
+ * Log out a user
+ */
 export const Logout = async (req, res, next) => {
   try {
-    //cookie options
-    const cookieOptions = {
+    // Clear the token cookie
+    res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       path: "/",
-    };
+    });
 
-    // Clear cookie
-    res.clearCookie("token", cookieOptions);
-
-    // Success response
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: `You have been successfully logged out.`,
+      message: "You have been logged out successfully.",
     });
   } catch (error) {
-    // Log the error and return a generic message
+    console.error("Logout error:", error);
     return next(
       new ApiError(
         500,
-        "An unexpected error occurred while logging you in. Please try again later."
+        "An error occurred while logging you out. Please try again later."
       )
     );
   }

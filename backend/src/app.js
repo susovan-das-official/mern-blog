@@ -23,9 +23,11 @@ app.use(morgan("dev"));
 
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import categoryRoutes from "./routes/category.routes.js";
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/category", categoryRoutes);
 
 app.use((err, req, res, next) => {
   console.log(err);

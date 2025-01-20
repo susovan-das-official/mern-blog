@@ -29,12 +29,11 @@ const GoogleLogin = () => {
 
       // Call the backend API to complete the login process.
       const response = await GoogleLoginApi(bodyData);
-      console.log(response);
 
       // Handle successful response.
       if (response.status === 200) {
         toast.success(response?.data?.message);
-        dispatch(setUser(response?.data?.user));
+        dispatch(setUser(response?.data?.data));
         navigate(RouteIndex);
       } else {
         toast.error(response?.data?.message);
@@ -50,8 +49,8 @@ const GoogleLogin = () => {
   // Render the Google Login button.
   return (
     <Button variant="outline" className="w-full text-sm" onClick={handleLogin}>
-      <FcGoogle /> {/* Google icon */}
-      Continue With Google {/* Button text */}
+      <FcGoogle />
+      Continue With Google
     </Button>
   );
 };

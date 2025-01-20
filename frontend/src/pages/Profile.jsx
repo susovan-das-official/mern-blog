@@ -42,7 +42,7 @@ const Profile = () => {
           withCredentials: true,
         });
         if (response.status === 200) {
-          setUserProfile(response.data.user);
+          setUserProfile(response.data?.data);
         }
       } catch (error) {
         toast.error("Failed to fetch user data.", error.message);
@@ -97,8 +97,8 @@ const Profile = () => {
       });
 
       if (response.status === 200) {
-        dispatch(setUser(response.data.user));
-        toast.success(response.data.message);
+        dispatch(setUser(response.data?.data));
+        toast.success(response.data?.message);
       }
     } catch (error) {
       toast.error(

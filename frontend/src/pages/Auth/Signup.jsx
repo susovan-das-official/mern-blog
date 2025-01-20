@@ -21,6 +21,8 @@ import GoogleLogin from "@/components/GoogleLogin";
 
 const Signup = () => {
   const navigate = useNavigate();
+
+
   const formSchema = z
     .object({
       username: z.string().min(3, "Username must be at least 3 character long"),
@@ -47,17 +49,17 @@ const Signup = () => {
     try {
       const response = await registerApi(values);
       if (response.status === 201) {
-        toast.success(response.data.message);
+        toast.success(response?.data?.message);
         form.reset();
         navigate(RouteSignIn);
       } else {
-        toast.error(response.data.message);
+        toast.error(response?.data?.message);
         form.reset();
         navigate(RouteSignIn);
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message);
       navigate(RouteSignIn);
     }
   }

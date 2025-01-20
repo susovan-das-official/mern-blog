@@ -22,9 +22,11 @@ import { useDispatch } from "react-redux";
 import { setUser } from "@/app/features/AuthSlice/authSlice";
 
 const SignIn = () => {
-  const dispatch = useDispatch();
 
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+
   const formSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8, "Password must be at least 8 character long"),
@@ -42,14 +44,12 @@ const SignIn = () => {
     try {
       // Login the user
       const response = await loginApi(values);
-      console.log(`Resoponse: `, response);
-
+    
       if (response.status === 200) {
         toast.success(response?.data?.message);
         form.reset();
-        dispatch(setUser(response?.data?.user));
+        dispatch(setUser(response?.data?.data));
         navigate(RouteIndex);
-        // localStorage.setItem("user", JSON.stringify(response?.data?.user));
       } else {
         toast.error(response?.data?.message);
         form.reset();
