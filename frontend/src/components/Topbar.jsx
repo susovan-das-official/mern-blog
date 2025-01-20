@@ -21,7 +21,7 @@ import { LogoutApi } from "@/api/Api";
 import { removeUser } from "@/app/features/AuthSlice/authSlice";
 import { toast } from "react-toastify";
 
-import { RouteIndex } from "@/helper/RouteName";
+import { RouteIndex, RouteProfile } from "@/helper/RouteName";
 
 const Topbar = () => {
   const { user, isLoggedIn } = useSelector((state) => state.auth);
@@ -66,7 +66,7 @@ const Topbar = () => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link to="/profile">
+                <Link to={RouteProfile}>
                   <FaUser />
                   Profile
                 </Link>
